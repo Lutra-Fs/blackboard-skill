@@ -109,7 +109,7 @@ CI runs the suite on Linux and macOS.
 
 ## License
 
-Copyright (C) 2026 Blackboard contributors.
+Copyright (C) 2026 Lutra-Fs and blackboard-skill contributors.
 
 The project uses the GNU General Public License version 3 only (`GPL-3.0-only`).
 See [LICENSE](LICENSE) for the license text.
