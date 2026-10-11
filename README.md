@@ -10,6 +10,36 @@ Incomplete page enumeration preserves the current snapshot; file revisions
 preserve previous versions. Reviewed change plans control resource decisions
 and local file disposition.
 
+## Install the agent skill
+
+With Node.js and npm available, run this from the project where you want to use
+the skill:
+
+```bash
+npx skills@latest add Lutra-Fs/blackboard-skill --skill blackboard
+```
+
+Select your agent when prompted by the
+[skills CLI](https://github.com/vercel-labs/skills). Installation is project-local
+by default. For Codex across all projects:
+
+```bash
+npx skills@latest add Lutra-Fs/blackboard-skill --skill blackboard --agent codex --global
+```
+
+In Codex, invoke `$blackboard` with your course URL and archive directory. For
+example:
+
+```text
+Use $blackboard to sync https://learn.example.edu/ultra/courses/_123_1/outline
+into ~/course-archive using my already signed-in browser.
+```
+
+Update the installed skill with `npx skills@latest update blackboard`. The
+installer includes the Python scripts and references; browser backends and
+optional caption tools are installed separately. [SKILL.md](SKILL.md) describes
+the workflow; [SPEC.md](SPEC.md) defines the acquisition contract.
+
 ## Requirements
 
 - Python 3.11+ on macOS or Linux. Archive writer locks use POSIX `fcntl`.
@@ -23,7 +53,7 @@ are separate integrations, checked when used. There is no institutional preset.
 Recorded live checks cover one deployment and selected integrations; other
 deployments need their own verification. See [SOURCES.md](SOURCES.md).
 
-## Quick start
+## Standalone CLI
 
 From a checkout of this repository, create an archive directory outside it and
 sign in to your Blackboard site through your chosen browser backend:
@@ -49,10 +79,8 @@ Replace the example URL with your own course URL. A course ID alone needs
 archive's site context. Optional reading-list and Panopto integrations use
 [site configuration](references/site-configuration.md).
 
-For agent use, place this checkout at `blackboard/` inside your agent's skills
-directory and invoke `$blackboard`. [SKILL.md](SKILL.md) describes the workflow;
-[SPEC.md](SPEC.md) defines the acquisition contract. CLI options are available
-through `python3 scripts/blackboard_cli.py --help` and each command's `--help`.
+CLI options are available through `python3 scripts/blackboard_cli.py --help` and
+each command's `--help`.
 
 ## Results and recovery
 
