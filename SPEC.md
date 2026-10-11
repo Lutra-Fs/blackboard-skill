@@ -1,48 +1,98 @@
-# Blackboard Acquisition Contract
+# Acquisition contract
 
-Blackboard acquires traceable course pages, hierarchy and linked resources.
-Authentication and interpretation of course content belong to the caller;
-coursework submission, grades and independent bibliographic acquisition are
-outside this contract.
+Blackboard gets course pages, their hierarchy, and linked resources.
+The caller handles authentication and interprets the acquired content.
+Coursework submission, grades, and independent bibliographic acquisition are outside this contract.
 
-## Inputs And Operations
+## Terms
 
-Ordinary live use needs a course URL, or a site address and course ID, plus an
-archive directory and an already signed-in browser. Explicit internal sites are
-supported; there is no school preset. Each archive belongs to one site/course.
+Use these terms in code descriptions, documents, and contributions.
+Use exact command names and JSON keys when you refer to the CLI.
+
+| Term | Meaning |
+|---|---|
+| Archive | Local evidence and state for one site and course. |
+| Snapshot | A published record of captured course pages and hierarchy. |
+| Capture | Page acquisition and enumeration before snapshot publication. |
+| Resource | An item recorded for acquisition. `asset_id` identifies the resource. |
+| Registered file | A local file version recorded for a resource. Registration alone does not prove file presence. |
+| Source mapping | The connection between a page, resource, and registered file. |
+| Acquisition | The process that obtains resource content. |
+| Coverage | The reported state of resources within the requested scope. |
+| Gap | An unresolved acquisition or discovery requirement within scope. |
+| Exclusion | A recorded decision that places a resource outside acquisition scope. |
+| Change plan | Reviewed resource decisions and local file actions. |
+| Context handoff | The task information that lets another contributor continue work. |
+
+## Inputs and operations
+
+Live course acquisition needs a course URL or a site address with a course ID.
+It also needs an archive directory and a signed-in browser.
+Explicit internal sites are supported.
+Each archive belongs to one site and course.
 Offline inspection needs no browser.
 
-- `capture` acquires current page text and hierarchy without downloading files.
-- `sync` captures pages and acquires linked resources.
-- `fetch` acquires resources from an existing capture, reusing completed files.
-- `status`, `files` and `validate` inspect coverage, file mappings and integrity.
-- `change diff/apply` reports changes and applies reviewed archive decisions.
-- `request get` reads raw JSON without modifying the archive.
+| Command | Behavior |
+|---|---|
+| `capture` | Get page text and hierarchy. Publish only a full capture. |
+| `sync` | Capture pages, then get resources from the published snapshot. |
+| `fetch` | Get resources from an existing snapshot. Reuse completed files. |
+| `status` | Report the current snapshot and acquisition state. |
+| `files` | Report registered files, source mappings, and file presence. |
+| `validate` | Examine archive integrity, registered files, and acquisition coverage. |
+| `change diff` | Report snapshot changes, file facts, and resource gaps. |
+| `change apply` | Apply a reviewed change plan. |
+| `request get` | Read raw site JSON without archive changes. |
 
-Usage and options are in [SKILL.md](SKILL.md) and command help.
+Read [SKILL.md](SKILL.md) for the workflow.
+Read command help for options.
 
-## Results And Recovery
+## Results
 
-A complete capture becomes current; incomplete enumeration preserves the
-previous capture. Source withdrawals are reported changes, not local deletions.
-Acquisition preserves earlier versions and local annotations. Dry-runs preview
-work without publishing or acquiring it.
+The default output is one schema-v2 JSON envelope on stdout.
+Progress messages go to stderr.
+`--format data` prints the payload.
+`files --format paths` prints present absolute file paths.
+Errors can still return a JSON envelope with these formats.
 
-Protected authentication failures stop acquisition and return
-`blackboard.browser_session_required` with a readable `errors[].solution`.
-The caller repairs login in the same browser profile and follows that solution.
-Closing task groups retains profile authentication. Other resource failures are
-reported individually and make acquisition partial/nonzero.
+A full capture becomes the current snapshot.
+Incomplete enumeration preserves the previous snapshot.
+Source withdrawals appear as changes and do not delete local files.
+Acquisition preserves earlier file versions and local annotations.
 
-Command success and complete acquisition are distinct. Unavailable resources
-remain reported gaps; excluded resources remain visible outside scope.
-`validate` checks in-scope coverage and registered files; a resource decision
-cannot hide a missing or damaged registered file.
+Command success does not prove complete acquisition.
+Unavailable resources stay gaps.
+Excluded resources stay visible outside scope.
+`validate` checks registered files even when a resource decision changes its scope.
+A decision cannot hide a missing or damaged registered file.
 
-## Reviewed Changes
+| Preview | Result |
+|---|---|
+| `capture --dry-run` | Preview capture metadata without publication. |
+| `sync --dry-run` | Preview capture metadata only. |
+| `fetch --dry-run` | Preview acquisition without file acquisition. |
+| `change apply --dry-run` | Examine and preview the plan without archive changes. |
 
-The caller supplies reasons for resource decisions and reviewed file disposition
-through [change plans](references/change-plan.md). Apply checks the reviewed
-snapshot and file hashes; it neither downloads files nor decides their meaning.
-Interrupted operations report recovery instructions, not an all-or-nothing
-batch guarantee.
+| Exit code | Meaning |
+|---|---|
+| 0 | Command success. Examine coverage separately. |
+| 1 | Failed operation or partial acquisition. |
+| 2 | Invalid input. |
+| 3 | Integrity failure or stale plan blocks the operation. |
+| 4 | Browser, authentication, or dependency action required. |
+| 75 | Another writer holds the archive lock. |
+| 130 | Interrupted operation. |
+
+## Recovery and reviewed changes
+
+Protected authentication failures return `blackboard.browser_session_required`.
+The caller signs in again and uses the command in `errors[].solution`.
+Other resource failures appear individually and can make acquisition partial.
+Read [archive recovery](references/archive-state.md) for retry conditions.
+
+The caller supplies reasons for each change plan entry.
+Apply checks the reviewed snapshot and actual file hashes.
+Apply does not get files or judge their content.
+Interrupted operations return recovery instructions.
+Completed file actions can stay after a later action fails.
+Read [change plans](references/change-plan.md) for the plan format and execution rules.

@@ -1,0 +1,42 @@
+name: Feature proposal
+description: Discuss a new backend, archive format, or acquisition scope.
+title: "[Proposal] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Give the expected behavior before you make a broad change.
+        A patch and a shared conversation are optional.
+  - type: textarea
+    id: need
+    attributes:
+      label: Problem and evidence
+      description: Give the problem and its supporting evidence. Use synthetic examples.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Proposed behavior
+      description: Give acceptance conditions and the affected part of the acquisition contract.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and verification
+      description: Give the main tradeoff and a method to confirm the result.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context handoff
+      description: Record earlier attempts and remaining questions. Reviewed task context is optional.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I examined the evidence, attachments, and shared context for private information.
+          required: true

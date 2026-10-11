@@ -1,100 +1,100 @@
 # Blackboard
 
-Archive Blackboard Learn course pages and linked files while keeping their
-source mappings, hierarchy and acquisition gaps visible. This repository is an
-agent skill with a standalone Python CLI.
+Archive Blackboard Learn course pages and linked files.
+Keep each file connected to its source page.
+Report missing resources and preserve earlier file versions.
 
-Use `capture` for pages, `sync` for pages and files, or `fetch` to fill gaps in an
-existing archive. Offline commands inspect coverage and registered files.
-Incomplete page enumeration preserves the current snapshot; file revisions
-preserve previous versions. Reviewed change plans control resource decisions
-and local file disposition.
+This repository contains an agent skill and a Python CLI.
+The caller supplies a signed-in browser for protected requests.
 
-## Install the agent skill
+## Install the skill
 
-With Node.js and npm available, run this from the project where you want to use
-the skill:
+Install Node.js and npm before you use the skills CLI.
+Use this command in your project directory:
 
 ```bash
 npx skills@latest add Lutra-Fs/blackboard-skill --skill blackboard
 ```
 
-Select your agent when prompted by the
-[skills CLI](https://github.com/vercel-labs/skills). Installation is project-local
-by default. For Codex across all projects:
+Select your agent when the installer asks.
+The [skills CLI](https://github.com/vercel-labs/skills) installs the skill in the current project by default.
+For Codex in all projects, use this command:
 
 ```bash
 npx skills@latest add Lutra-Fs/blackboard-skill --skill blackboard --agent codex --global
 ```
 
-In Codex, invoke `$blackboard` with your course URL and archive directory. For
-example:
+In Codex, give `$blackboard` a course URL and an archive directory:
 
 ```text
 Use $blackboard to sync https://learn.example.edu/ultra/courses/_123_1/outline
-into ~/course-archive using my already signed-in browser.
+into ~/course-archive using my signed-in browser.
 ```
 
-Update the installed skill with `npx skills@latest update blackboard`. The
-installer includes the Python scripts and references; browser backends and
-optional caption tools are installed separately. [SKILL.md](SKILL.md) describes
-the workflow; [SPEC.md](SPEC.md) defines the acquisition contract.
+To update the skill, run `npx skills@latest update blackboard`.
+The installer includes scripts and reference documents.
+Install browser tools and optional caption tools separately.
 
-## Requirements
+## Prepare the runtime
 
-- Python 3.11+ on macOS or Linux. Archive writer locks use POSIX `fcntl`.
-- For protected requests, an installed and already signed-in browser backend:
-  `ego-browser`, `browser-use`, or `kimi-webbridge`. Login is handled externally.
-- For optional YouTube/TED captions, the `yt-dlp` executable on `PATH`.
-- The system `file` command for external-document type detection.
+| Requirement | Use |
+|---|---|
+| Python 3.11 or later on macOS or Linux | Use the CLI. Archive writer locks use POSIX `fcntl`. |
+| `ego-browser`, `browser-use`, or `kimi-webbridge` | Send protected requests through a signed-in browser. |
+| `yt-dlp` on `PATH` | Get optional YouTube and TED captions. |
+| System `file` command | Identify external document types. |
 
-The core CLI uses Python's standard library. Browser tools and caption tools
-are separate integrations, checked when used. There is no institutional preset.
-Recorded live checks cover one deployment and selected integrations; other
-deployments need their own verification. See [SOURCES.md](SOURCES.md).
+The core CLI uses the Python standard library.
+The CLI checks optional tools when an operation needs them.
+Each site needs its own configuration and verification.
+See [recorded evidence](SOURCES.md) for the limits of previous live checks.
 
-## Standalone CLI
+## Use the CLI
 
-From a checkout of this repository, create an archive directory outside it and
-sign in to your Blackboard site through your chosen browser backend:
+Use these commands from a repository checkout.
+Replace the example URL with your course URL.
+Make the archive outside the repository:
 
 ```bash
 mkdir -p ../course-archive
 python3 scripts/blackboard_cli.py capture \
   https://learn.example.edu/ultra/courses/_123_1/outline \
   --root ../course-archive --browser-backend ego
+```
 
-# Acquire linked resources from the published capture.
+When capture publishes a full snapshot, get its linked resources:
+
+```bash
 python3 scripts/blackboard_cli.py fetch \
   --root ../course-archive --browser-backend ego
+```
 
-# Inspect the archive offline.
+Examine the archive without a browser:
+
+```bash
 python3 scripts/blackboard_cli.py status --root ../course-archive
 python3 scripts/blackboard_cli.py files --root ../course-archive --format paths
 python3 scripts/blackboard_cli.py validate --root ../course-archive
 ```
 
-Replace the example URL with your own course URL. A course ID alone needs
-`--site https://learn.example.edu` on first capture. Later commands reuse the
-archive's site context. Optional reading-list and Panopto integrations use
-[site configuration](references/site-configuration.md).
+For a course ID, supply `--site https://learn.example.edu` on the first capture.
+Later commands use the site recorded in the archive.
+Use `python3 scripts/blackboard_cli.py --help` to see available commands.
+Use each command's `--help` to read its options.
 
-CLI options are available through `python3 scripts/blackboard_cli.py --help` and
-each command's `--help`.
+## Find the instructions
 
-## Results and recovery
+| Task | Document |
+|---|---|
+| Choose an operation and examine completion | [Agent workflow](SKILL.md) |
+| Interpret terms, results, and exit codes | [Acquisition contract](SPEC.md) |
+| Restore browser access | [Authentication](references/authentication.md) |
+| Continue interrupted work or examine caption gaps | [Archive recovery](references/archive-state.md) |
+| Review resource decisions or remove an old file | [Change plans](references/change-plan.md) |
+| Configure reading-list or Panopto services | [Site configuration](references/site-configuration.md) |
+| Report a problem or hand over a contribution | [Contributing](CONTRIBUTING.md) |
 
-Output is a schema-v2 JSON envelope on stdout; progress goes to stderr. Success
-is measured against the requested scope: a complete page capture may still have
-undownloaded files. Full acquisition requires `data.coverage.complete`; inspect
-`data.gaps` and `data.excluded` when coverage is partial.
-
-Authentication failures return `blackboard.browser_session_required`. Restore
-login in the same browser profile, then run the command in `errors[].solution`.
-See [authentication](references/authentication.md) and
-[archive recovery](references/archive-state.md).
-
-## Development
+## Do the offline tests
 
 ```bash
 python3 -m venv .venv
@@ -102,15 +102,16 @@ python3 -m venv .venv
 .venv/bin/python -m pytest -q
 ```
 
-Tests use synthetic responses and temporary archives; they need no course
-access, browser session or credentials. Installing the development dependencies
-also enables the TED plugin contract tests. CI runs the same suite on Linux and
-macOS. See [CONTRIBUTING.md](CONTRIBUTING.md) before adding fixtures.
+Tests use synthetic responses and temporary archives.
+The suite operates without course access, browser sessions, or credentials.
+Development dependencies include the tools for TED contract tests.
+CI runs the suite on Linux and macOS.
 
 ## License
 
 Copyright (C) 2026 Blackboard contributors.
 
-This project is licensed under the GNU General Public License version 3 only
-(`GPL-3.0-only`); see [LICENSE](LICENSE). This license covers this project's code
-and documentation. Acquired course material retains its own rights.
+The project uses the GNU General Public License version 3 only (`GPL-3.0-only`).
+See [LICENSE](LICENSE) for the license text.
+The license covers this project's code and documentation.
+Acquired course material keeps its own rights.

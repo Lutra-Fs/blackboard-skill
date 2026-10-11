@@ -1,46 +1,64 @@
-# Archive State And Recovery
+# Archive state and recovery
 
-## Continue Or Retry
+## Continue or retry
 
-Reuse returned facts; query `status` when information needed for the next action
-is missing or stale. `fetch` retries default-scope missing/failed resources and
-reuses completed files. Use `--asset ID` for targeted work or `--refresh` to
-recheck completed exports while retaining prior versions.
+Read this section after an interrupted operation or a resource failure.
 
-Follow `errors[].solution` after a failure. A new acquisition failure remains
-partial/nonzero. Confirmed unavailable resources remain coverage gaps; scope
-exclusions are reported separately. Use [change plans](change-plan.md) to revise
-those decisions before retrying. For login failures, see
-[authentication](authentication.md).
+Use the returned facts when they are current.
+If required information is missing or stale, examine `status`.
+Use the command in `errors[].solution` when an error gives recovery instructions.
 
-Completed files are reused on retry; unfinished work may restart. Read commands
-and dry-runs inspect or preview rather than resume work.
+| Need | Action |
+|---|---|
+| Get missing or failed resources in the default scope | Use `fetch --root DIR`. Completed files stay reusable. |
+| Retry selected resources | Add `--asset ID`. |
+| Recheck a completed resource | Add `--refresh`. Earlier versions stay available. |
+| Retry an unavailable or excluded resource | Apply a `fetch` decision before acquisition. Read [change plans](change-plan.md). |
+| Restore protected access | Read [authentication](authentication.md). |
 
-## State Ownership
+A new acquisition failure can leave partial coverage and a nonzero exit code.
+Confirmed unavailable resources stay gaps.
+Scope exclusions appear separately.
+Completed files stay available after later failures.
+Unfinished work can restart.
+Read commands and dry-runs examine or preview work without recovery actions.
 
-Keep each archive tied to its original site and course. For missing or damaged
-archive state, restore a complete archive or capture into a new course directory.
+Gap entries include `asset_id`, `decision`, `reason`, source-page paths, and `last_error`.
+When available, `last_error` includes `error_code` and `message`.
+Use these facts to select a retry, replacement, or unavailable decision.
+
+## State ownership
+
+Read this section when archive identity or registered state is missing or damaged.
+
+Keep each archive with its original site and course.
+Restore a full archive or capture into a new course directory.
 Use the CLI to maintain file registrations and resource decisions.
 
-An incomplete capture leaves the previous archive current. A withdrawn source
-does not delete local files, and later failures do not erase earlier downloads.
-Use [change plans](change-plan.md) for reviewed file deletion. Follow returned
-recovery instructions before further changes.
+Incomplete capture preserves the current snapshot.
+A withdrawn source does not remove local files.
+For reviewed file deletion, read [change plans](change-plan.md).
 
-`validate` checks archive integrity and in-scope acquisition. `metadata_ok` with
-no `issues` can still fail for undownloaded resources; interpret coverage against
-the requested task. Missing registered files or damaged identity remain errors.
+`validate` checks archive integrity and acquisition coverage.
+`metadata_ok` can be true with no integrity `issues`, while missing acquisitions still cause validation failure.
+Examine coverage against the requested task.
+Missing registered files and damaged identity stay errors.
 
-## Caption Gaps
+## Caption gaps
 
-YouTube/TED acquisition fetches source-provided English captions.
+Read this section when YouTube or TED captions are missing.
 
-- `no-captions` is a completed check, not an acquired transcript. Locate
-  `video.json` through `files`; its `caption_probe` records the check time and
-  available tags. `no-tracks` means none were advertised at that check;
-  `no-requested-language` means tracks exist but none match the request.
-- For `failed`, use the current returned error rather than an earlier probe.
-  After fixing the reported cause, retry with `fetch --root DIR --asset ID`.
-- To recheck `no-captions` after the source or caption support changes, use
-  `fetch --root DIR --asset ID --refresh`. Retrying cannot
-  supply a transcript when the source has no matching captions.
+Acquisition requests source-provided English captions.
+Use `files` to locate `video.json`.
+Its `caption_probe` records the check time and available language tags.
+
+| Result | Meaning and next action |
+|---|---|
+| `no-captions` | The check completed without an acquired transcript. Examine the probe reason. |
+| `no-tracks` | The source advertised no tracks at the recorded check time. |
+| `no-requested-language` | The source advertised tracks, but none matched the requested language. |
+| `failed` | Use the current returned error. Correct its cause before a targeted retry. |
+
+After you correct an acquisition failure, use `fetch --root DIR --asset ID`.
+If the source or caption support changes, recheck with `fetch --root DIR --asset ID --refresh`.
+A retry cannot supply captions that the source does not give.

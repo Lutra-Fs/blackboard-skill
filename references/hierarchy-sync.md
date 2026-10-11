@@ -1,25 +1,28 @@
-# Page Hierarchy And File Mappings
+# Page hierarchy and source mappings
 
-## Read Source Evidence
+Read this document when you connect local evidence to its course source.
 
-`_blackboard/course-tree.json` describes the current captured pages. Use their
-parent identities and breadcrumbs for source hierarchy, not local filenames.
-A parent reference without a captured page is not evidence of that page's text.
+## Read source evidence
 
-The recorded page directories contain:
+`_blackboard/course-tree.json` records the current captured pages.
+Use parent identities and breadcrumbs to determine the source hierarchy.
+A parent reference alone does not prove that the archive contains the parent's text.
 
-- `page.md`: readable text and source context.
-- `links.json`: attachments, child links, external links and unresolved assets.
-- `source.json`: page identity and capture provenance.
+| File in a page directory | Content |
+|---|---|
+| `page.md` | Readable text and source context. |
+| `links.json` | Attachments, child links, external links, and unresolved assets. |
+| `source.json` | Page identity and capture source information. |
 
-Use `files` for registered file paths and actual presence. Connect files to their
-source pages through recorded page/attachment identities. A resource ID identifies
-an acquisition resource, not the meaning of its content. A tool launch link alone
-does not establish that its documents or captions were acquired.
+Use `files` for registered paths and actual file presence.
+Use recorded page and attachment identities to connect files to source pages.
+A resource ID identifies an acquisition resource.
+It does not describe the meaning of the content.
+A tool launch link does not prove acquisition of its documents or captions.
 
-## Preserve The Course Layout
+## Preserve the course layout
 
-Choose the course root using its applicable instructions and existing layout.
-The CLI handles file placement and filename collisions. Ordinary fetch preserves
-registered paths and local annotations; it does not reorganize archived courses.
-For reviewed changes or deletion, use [change plans](change-plan.md).
+Select the course root from its applicable instructions and existing layout.
+The CLI controls file placement and filename collisions.
+Ordinary fetch preserves registered paths and local annotations.
+For reviewed changes or deletion, read [change plans](change-plan.md).

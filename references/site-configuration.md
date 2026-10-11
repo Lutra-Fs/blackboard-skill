@@ -1,9 +1,15 @@
-# Site Configuration
+# Site configuration
 
-Ordinary use needs a full course URL, or a course ID with `--site URL`, and an
-already signed-in browser. There is no institutional preset.
+Read this document for optional service origins and trusted attachment hosts.
 
-Use `--site-config PATH` instead of `--site` for optional integration settings:
+## Supply the site
+
+Use a full course URL or a course ID with `--site URL`.
+Protected requests need a signed-in browser.
+The project has no institutional preset.
+Later commands use the site context recorded in the archive.
+
+For optional integrations, use `--site-config PATH` instead of `--site`:
 
 ```json
 {
@@ -15,15 +21,25 @@ Use `--site-config PATH` instead of `--site` for optional integration settings:
 }
 ```
 
-Only `origin` is required. The site's own host is trusted for attachments.
-`trusted_host_suffixes` optionally authorizes an explicit multi-label suffix.
-Missing integration origins leave those integrations unavailable; ordinary
-course capture remains usable. The default display timezone is UTC.
-`ultra_supported: false` disables Ultra-specific discovery and route shells.
+## Configure optional services
 
-Explicit sites and trusted attachment hosts may be internal, including IPv4
-and IPv6 addresses. TLS certificate verification remains enabled. An explicitly
-selected HTTP site uses HTTP; prefer HTTPS where available. Selecting one site
-or file host does not authorize unrelated internal redirect targets.
+| Field | Behavior |
+|---|---|
+| `origin` | Required Blackboard site origin. The site's host is trusted for attachments. |
+| `trusted_hosts` | Additional explicitly trusted attachment hosts. |
+| `trusted_host_suffixes` | Explicitly trusted host suffixes with multiple labels. |
+| `leganto_origin` | Origin for the optional reading-list integration. |
+| `panopto_origin` | Origin for the optional Panopto integration. |
+| `display_timezone` | Display timezone. The default is UTC. |
+| `ultra_supported` | Set `false` to disable Ultra discovery and route shells. |
 
-Later commands reuse the archive's site context.
+Missing integration origins leave those integrations unavailable.
+Ordinary course capture stays usable.
+
+## Select trusted hosts
+
+Explicit sites and trusted hosts can use internal addresses, including IPv4 and IPv6.
+TLS certificate verification stays enabled.
+An explicitly selected HTTP site uses HTTP.
+Prefer HTTPS where the site supports it.
+Site or file host selection does not authorize unrelated internal redirect targets.

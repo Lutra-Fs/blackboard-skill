@@ -1,15 +1,28 @@
-# Change Plans
+# Change plans
 
-`change diff --root DIR` reports the current `base_snapshot`, changes against its
-previous published snapshot, source-page paths, all retained registered file
-versions with actual/original SHA-256 and local-modification flags, and resource
-gaps/exclusions. On an archive predating snapshot lineage, `before_snapshot` is
-null and `pages` is null; no historical delta is invented. A known first capture
-has an empty baseline and reports its nodes as added.
-These are facts, not semantic replacement decisions. Read page/file content to
-judge whether a revision supersedes or complements another version.
+Read this document before you make or apply resource decisions and file actions.
 
-## Input
+## Examine the evidence
+
+Use `change diff --root DIR`.
+The result reports:
+
+- The current `base_snapshot` and changes from the previous published snapshot.
+- Source-page paths.
+- All kept registered file versions.
+- Actual and original SHA-256 hashes, with local modification flags.
+- Resource gaps and exclusions.
+
+For an archive without recorded snapshot history, `before_snapshot` and `pages` are null.
+For a known first capture, the baseline is empty and its nodes appear as additions.
+
+Read page and file content.
+Record whether a revision replaces or complements an earlier version.
+
+## Write the plan
+
+Replace every placeholder below with a reviewed value from the archive.
+Use the actual file hashes reported by `change diff`.
 
 ```json
 {
@@ -19,7 +32,7 @@ judge whether a revision supersedes or complements another version.
     {
       "asset_id": "known resource ID",
       "decision": "unavailable",
-      "reason": "Source link verified broken; no usable alternative found."
+      "reason": "The source link is broken. No usable alternative exists."
     }
   ],
   "files": [
@@ -27,43 +40,64 @@ judge whether a revision supersedes or complements another version.
       "old": {"path": "Week01/old.pdf", "sha256": "actual 64-digit lowercase SHA-256"},
       "new": {"path": "Week01/new.pdf", "sha256": "actual 64-digit lowercase SHA-256"},
       "action": "remove_old",
-      "reason": "New revision covers the old material; old file has no unique annotations."
+      "reason": "The new revision covers the old material. The old file has no unique annotations."
     }
   ]
 }
 ```
 
-`resources` and `files` are optional arrays; at least one entry is required.
-Every entry needs a nonempty reason. Unlisted items are unchanged.
+`resources` and `files` are optional arrays.
+Supply at least one entry.
+Give each entry a nonempty reason.
+Unlisted items stay unchanged.
 
-Resource decisions replace one another, never stack:
+### Resource decisions
 
-- `fetch`: default acquisition; restores normal attempts on the next fetch.
-- `unavailable`: still needed but confirmed unobtainable; skip routine attempts
-  and continue reporting the actual missing resource in `gaps`.
-- `exclude`: outside the chosen acquisition scope; report in `excluded`, not gaps.
+| Decision | Effect |
+|---|---|
+| `fetch` | Restore normal acquisition attempts on the next fetch. |
+| `unavailable` | Keep the requirement as a gap. Skip routine acquisition attempts. |
+| `exclude` | Place the resource outside scope. Report it in `excluded`. |
 
-Explicit asset selection and refresh respect these decisions. To retry a decided
-resource, apply `fetch` first. Apply itself never downloads or logs in. A global
-authentication error requires external repair, not bulk unavailable decisions.
+A new decision replaces the previous decision.
+Explicit asset selection and refresh respect these decisions.
+To retry a decided resource, apply `fetch` first.
+For a global authentication failure, restore access externally.
+Use resource decisions only when evidence supports the individual resource decision.
 
-File actions are `keep_both` (retain and record the review) or `remove_old`.
-Both references require registered course-relative paths and reviewed actual
-SHA-256; new must already exist. Deletion checks all entries before any mutation.
-Deleting an active resource's only version in favor of a different resource also
-requires an explicit exclusion for the superseded resource, avoiding silent
-redownload. Same-resource retained replacements remain reusable.
+### File actions
 
-## Execute
+| Action | Effect |
+|---|---|
+| `keep_both` | Keep both files and record the review. |
+| `remove_old` | Remove the reviewed old file and keep the new file. |
+
+Both file references need registered paths relative to the course archive and reviewed actual SHA-256 hashes.
+The new file must already exist.
+The CLI checks all deletion entries before it changes files.
+
+If a different resource replaces an active resource's only file version, explicitly exclude the superseded resource.
+This decision prevents automatic acquisition of the superseded resource.
+Kept replacements for the same resource stay reusable.
+
+## Preview and apply
+
+Replace `<SKILL_ROOT>` with the installed skill directory.
 
 ```bash
 python3 "<SKILL_ROOT>/scripts/blackboard_cli.py" change apply plan.json --root DIR --dry-run
 python3 "<SKILL_ROOT>/scripts/blackboard_cli.py" change apply plan.json --root DIR
 ```
 
-Stale snapshots/files refuse execution and return a solution to review again.
-After a file-cleanup failure, fix the reported cause and rerun the same
-`change apply` plan; this finishes local cleanup without downloading resources.
-Apply reports completed/pending deletion entries on execution failure; batch
-execution is not an all-or-nothing filesystem transaction. Unfinished
-acquisitions must recover with `fetch` before applying a new plan.
+Apply within the user's authorized scope.
+Plan application records decisions and file actions.
+It does not get resources or restore login.
+A stale snapshot or file hash blocks execution.
+Use the returned solution to examine the evidence again.
+
+Before a new plan, recover unfinished acquisitions with `fetch`.
+After a file cleanup failure, correct the cause.
+Use the same `change apply` plan again.
+The error reports completed and pending deletion entries.
+Completed actions can stay when later cleanup fails.
+A repeated plan finishes local cleanup without resource acquisition.
