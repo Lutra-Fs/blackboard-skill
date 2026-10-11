@@ -1,0 +1,4 @@
+interface:
+  display_name: "Blackboard"
+  short_description: "Safely archive and validate Blackboard course evidence"
+  default_prompt: "Use $blackboard to archive and validate this Blackboard course safely."

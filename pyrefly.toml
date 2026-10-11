@@ -1,0 +1,5 @@
+# Tests are excluded: they lean on MagicMock/SimpleNamespace harnesses that
+# pyrefly cannot model (~80 findings, all missing-attribute/bad-argument-type
+# noise); scripts/ is the checked surface.
+project-includes = ["scripts/**/*.py"]
+search-path = ["scripts"]
